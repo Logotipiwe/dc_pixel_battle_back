@@ -21,7 +21,7 @@ func main() {
 			log.Fatalln(err)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*") //TOOD only on dev
+		w.Header().Set("Access-Control-Allow-Origin", "*") //TODO only on dev
 		dtos := utils.Map(pixels, func(p Pixel) PixelDto {
 			return p.toDto()
 		})
