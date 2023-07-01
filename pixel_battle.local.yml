@@ -18,6 +18,8 @@ services:
       SUBPATH: /pixel-battle-back
       OUTER_SCHEME: http
       OUTER_HOST: localhost
+    ports:
+      - 82:80
 networks:
   dc-net:
     external: true

@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	env "github.com/logotipiwe/dc_go_env_lib"
+	utils "github.com/logotipiwe/dc_go_utils/src"
 	"log"
 	"net/http"
 )
@@ -19,13 +21,16 @@ func main() {
 			log.Fatalln(err)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(pixels)
+		dtos := utils.Map(pixels, func(p Pixel) PixelDto {
+			return p.toDto()
+		})
+		err = json.NewEncoder(w).Encode(dtos)
 		if err != nil {
 			log.Fatalln(err)
 		}
 	})
 
-	err := http.ListenAndServe(":3001", nil)
+	err := http.ListenAndServe(":"+env.GetContainerPort(), nil)
 	if err != nil {
 		log.Fatalln(err)
 	} else {
