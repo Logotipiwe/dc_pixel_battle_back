@@ -18,7 +18,9 @@ services:
       SUBPATH: /pixel-battle-back
       OUTER_SCHEME: http
       OUTER_HOST: localhost
-      AUTO_AUTH: 1
+      CONFIG_SERVER_URL: http://config_server
+      SERVICE_NAME: pixel-battle-back
+      NAMESPACE: dev-dc
     ports:
       - 82:80
 networks:

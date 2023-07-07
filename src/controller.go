@@ -3,41 +3,80 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Logotipiwe/dc_go_auth_lib/auth"
 	env "github.com/logotipiwe/dc_go_env_lib"
 	utils "github.com/logotipiwe/dc_go_utils/src"
+	"github.com/logotipiwe/dc_go_utils/src/config"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func main() {
+	config.LoadDcConfig()
 	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
 		println("hi")
 		fmt.Fprintf(w, "hi")
 	})
 
-	http.HandleFunc("/load-pixels", func(w http.ResponseWriter, r *http.Request) {
-		user, err := GetUserData(r)
-		if err != nil {
-			println(err.Error())
-			w.WriteHeader(403)
-			return
-		}
+	http.HandleFunc("/api/load-pixels", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Access-Control-Allow-Origin", "*") //TODO only on dev
-		if user == nil {
+		pixels, err := LoadAllPixels()
+		if err != nil {
+			w.WriteHeader(500)
+			println(err.Error())
+			return
+		}
+		dtos := utils.Map(pixels, func(p Pixel) PixelDto {
+			return p.toDto()
+		})
+		err = json.NewEncoder(w).Encode(dtos)
+		if err != nil {
+			println(err.Error())
+		}
+	})
+
+	http.HandleFunc("/api/load-colors", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		err := json.NewEncoder(w).Encode(getDefaultColors())
+		if err != nil {
+			println(fmt.Sprintf("error writing colors %s", err.Error()))
+		}
+	})
+
+	http.HandleFunc("/api/set-pixel", func(w http.ResponseWriter, r *http.Request) {
+		println("/set-pixel")
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		user, err := auth.FetchUserData(r)
+		if err != nil {
 			w.WriteHeader(403)
-		} else {
-			pixels, err := LoadAllPixels()
-			if err != nil {
-				log.Fatalln(err)
-			}
-			dtos := utils.Map(pixels, func(p Pixel) PixelDto {
-				return p.toDto()
-			})
-			err = json.NewEncoder(w).Encode(dtos)
-			if err != nil {
-				log.Fatalln(err)
-			}
+			println(err.Error())
+			return
+		}
+		color := r.URL.Query().Get("color")
+		rowStr := r.URL.Query().Get("row")
+		colStr := r.URL.Query().Get("col")
+		if colStr == "" || rowStr == "" || !isColorExist(color) {
+			w.WriteHeader(400)
+			println("Wrong data sent")
+			return
+		}
+		row, err1 := strconv.Atoi(rowStr)
+		col, err2 := strconv.Atoi(colStr)
+		if err1 != nil || err2 != nil {
+			w.WriteHeader(500)
+			println(fmt.Sprintf("%s; %s", err1, err2))
+			return
+		}
+		pixel := Pixel{row, col, color, user.Id}
+		err = pixel.savePixel()
+		if err != nil {
+			println("Error updating pixel %s", err.Error())
+			w.WriteHeader(500)
+			return
 		}
 	})
 
