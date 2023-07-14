@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Logotipiwe/dc_go_auth_lib/auth"
-	env "github.com/logotipiwe/dc_go_env_lib"
 	utils "github.com/logotipiwe/dc_go_utils/src"
 	"github.com/logotipiwe/dc_go_utils/src/config"
 	"log"
@@ -14,10 +13,10 @@ import (
 
 func main() {
 	config.LoadDcConfig()
-	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
-		println("hi")
-		fmt.Fprintf(w, "hi")
-	})
+	err := InitDb()
+	if err != nil {
+		panic(err)
+	}
 
 	http.HandleFunc("/api/load-pixels", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -80,8 +79,15 @@ func main() {
 		}
 	})
 
+	pool := NewPool()
+	go pool.Start()
+	http.HandleFunc("/api/socket/listen-changes", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(pool, w, r)
+	})
+
 	println(fmt.Sprint("Hello, we're up!"))
-	err := http.ListenAndServe(":"+env.GetContainerPort(), nil)
+	port := config.GetConfig("CONTAINER_PORT")
+	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}

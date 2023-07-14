@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	env "github.com/logotipiwe/dc_go_env_lib"
+	. "github.com/logotipiwe/dc_go_utils/src/config"
 )
 
 type PixelResult struct {
@@ -14,18 +14,22 @@ type PixelResult struct {
 	PlayerId sql.NullString
 }
 
-func ConnectDb() (*sql.DB, error) {
-	println("Database connected!")
-	connectionStr := fmt.Sprintf("%v:%v@tcp(%v)/%v", env.GetDbLogin(), env.GetDbPassword(),
-		env.GetDbHost(), env.GetDbName())
-	db, err := sql.Open("mysql", connectionStr)
+var db *sql.DB
+
+func InitDb() error {
+	connectionStr := fmt.Sprintf("%v:%v@tcp(%v)/%v", GetConfig("DB_LOGIN"), GetConfig("DB_PASS"),
+		GetConfig("DB_HOST"), GetConfig("DB_NAME"))
+	conn, err := sql.Open("mysql", connectionStr)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if err := db.Ping(); err != nil {
-		return nil, err
+	if err := conn.Ping(); err != nil {
+		println(fmt.Sprintf("Error connecting database: %s", err))
+		return err
 	}
-	return db, nil
+	db = conn
+	println("Database connected!")
+	return nil
 }
 
 func toNullable(s string) sql.NullString {
@@ -39,10 +43,6 @@ func toNullable(s string) sql.NullString {
 }
 
 func LoadAllPixels() ([]Pixel, error) {
-	db, err := ConnectDb()
-	if err != nil {
-		return nil, err
-	}
 	var pixels []Pixel
 	rows, err := db.Query("SELECT * FROM pixels")
 	if err != nil {
@@ -69,10 +69,6 @@ func toModel(p PixelResult) Pixel {
 }
 
 func (p Pixel) savePixel() error {
-	db, err := ConnectDb()
-	if err != nil {
-		return err
-	}
 	exec, err := db.Exec("insert into pixels (pixel_row, pixel_col, color, player_id) "+
 		"VALUES (?, ?, ?, ?) on duplicate key update color = ?, player_id = ?",
 		p.Row, p.Column, p.Color, p.PlayerId, p.Color, p.PlayerId)
