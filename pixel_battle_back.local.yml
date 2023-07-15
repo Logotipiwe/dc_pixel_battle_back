@@ -10,7 +10,6 @@ services:
       CONFIG_SERVER_URL: http://config_server
       SERVICE_NAME: pixel-battle-back
       NAMESPACE: dev-dc
-      M_TOKEN: ${M_TOKEN}
     ports:
       - 82:80
 networks:
