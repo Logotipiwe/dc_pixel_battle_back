@@ -87,6 +87,7 @@ func main() {
 
 	println(fmt.Sprint("Hello, we're up!"))
 	port := config.GetConfig("CONTAINER_PORT")
+	fmt.Println("Port: " + port)
 	err = http.ListenAndServe(":"+port, nil)
 	if err != nil {
 		log.Fatalln(err)

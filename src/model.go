@@ -29,7 +29,10 @@ var colors = []ColorDto{
 	{Color: "black"},
 	{Color: "blue"},
 	{Color: "yellow"},
-	{Color: "green"},
+	{Color: "#5F2DF2"},
+	{Color: "#4D2D9B"},
+	{Color: "#858585"},
+	{Color: "#5CBF0D"},
 }
 
 func getDefaultColors() []ColorDto {
