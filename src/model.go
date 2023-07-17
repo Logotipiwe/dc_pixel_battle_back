@@ -26,12 +26,12 @@ func (p Pixel) toDto() PixelDto {
 
 var colors = []ColorDto{
 	{Color: "white"},
+	{Color: "#858585"},
 	{Color: "black"},
 	{Color: "blue"},
 	{Color: "yellow"},
 	{Color: "#5F2DF2"},
-	{Color: "#4D2D9B"},
-	{Color: "#858585"},
+	{Color: "#FF2501"},
 	{Color: "#5CBF0D"},
 }
 
