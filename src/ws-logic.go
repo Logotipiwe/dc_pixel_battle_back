@@ -9,6 +9,7 @@ const (
 	Join     = "JOIN"
 	Leave    = "LEAVE"
 	SetPixel = "SET_PIXEL"
+	Ping     = "PING"
 )
 
 func HandleMessage(client *Client, event map[string]string) {
@@ -43,6 +44,8 @@ func HandleMessage(client *Client, event map[string]string) {
 			Client: client,
 		}
 		client.Pool.Broadcast <- msg
+		break
+	case Ping:
 		break
 	default:
 		fmt.Println("no type on message")
