@@ -3,12 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/Logotipiwe/dc_go_auth_lib/auth"
 	utils "github.com/logotipiwe/dc_go_utils/src"
 	"github.com/logotipiwe/dc_go_utils/src/config"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 func main() {
@@ -45,43 +43,44 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/api/set-pixel", func(w http.ResponseWriter, r *http.Request) {
-		println("/set-pixel")
-		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		user, err := auth.FetchUserData(r)
-		if err != nil {
-			w.WriteHeader(403)
-			println(err.Error())
-			return
-		}
-		color := r.URL.Query().Get("color")
-		rowStr := r.URL.Query().Get("row")
-		colStr := r.URL.Query().Get("col")
-		if colStr == "" || rowStr == "" || !isColorExist(color) {
-			w.WriteHeader(400)
-			println("Wrong data sent")
-			return
-		}
-		row, err1 := strconv.Atoi(rowStr)
-		col, err2 := strconv.Atoi(colStr)
-		if err1 != nil || err2 != nil {
-			w.WriteHeader(500)
-			println(fmt.Sprintf("%s; %s", err1, err2))
-			return
-		}
-		pixel := Pixel{row, col, color, user.Id}
-		err = pixel.savePixel()
-		if err != nil {
-			println("Error updating pixel %s", err.Error())
-			w.WriteHeader(500)
-			return
-		}
-	})
+	//http.HandleFunc("/api/set-pixel", func(w http.ResponseWriter, r *http.Request) {
+	//	println("/set-pixel")
+	//	w.Header().Set("Content-Type", "application/json")
+	//	w.Header().Set("Access-Control-Allow-Origin", "*")
+	//	user, err := auth.FetchUserData(r)
+	//	if err != nil {
+	//		w.WriteHeader(403)
+	//		println(err.Error())
+	//		return
+	//	}
+	//	color := r.URL.Query().Get("color")
+	//	rowStr := r.URL.Query().Get("row")
+	//	colStr := r.URL.Query().Get("col")
+	//	if colStr == "" || rowStr == "" || !isColorExist(color) {
+	//		w.WriteHeader(400)
+	//		println("Wrong data sent")
+	//		return
+	//	}
+	//	row, err1 := strconv.Atoi(rowStr)
+	//	col, err2 := strconv.Atoi(colStr)
+	//	if err1 != nil || err2 != nil {
+	//		w.WriteHeader(500)
+	//		println(fmt.Sprintf("%s; %s", err1, err2))
+	//		return
+	//	}
+	//	pixel := Pixel{row, col, color, user.Id}
+	//	err = pixel.savePixel()
+	//	if err != nil {
+	//		println("Error updating pixel %s", err.Error())
+	//		w.WriteHeader(500)
+	//		return
+	//	}
+	//})
 
 	pool := NewPool()
 	go pool.Start()
 	http.HandleFunc("/api/socket/listen-changes", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("/listen-changes")
 		serveWs(pool, w, r)
 	})
 

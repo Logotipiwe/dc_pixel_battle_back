@@ -69,12 +69,11 @@ func toModel(p PixelResult) Pixel {
 }
 
 func (p Pixel) savePixel() error {
-	exec, err := db.Exec("insert into pixels (pixel_row, pixel_col, color, player_id) "+
+	_, err := db.Exec("insert into pixels (pixel_row, pixel_col, color, player_id) "+
 		"VALUES (?, ?, ?, ?) on duplicate key update color = ?, player_id = ?",
 		p.Row, p.Column, p.Color, p.PlayerId, p.Color, p.PlayerId)
 	if err != nil {
 		return err
 	}
-	println(exec)
 	return nil
 }

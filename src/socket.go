@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Logotipiwe/dc_go_auth_lib/auth"
 	"github.com/google/uuid"
 	ws "github.com/gorilla/websocket"
 	"log"
@@ -44,6 +45,7 @@ type Client struct {
 	ID   string
 	Conn *ws.Conn
 	Pool *Pool
+	User auth.DcUser
 }
 type MessageWithClient struct {
 	Message Message
@@ -127,6 +129,13 @@ func BroadcastAll(pool *Pool, m Message) error {
 }
 
 func serveWs(pool *Pool, w http.ResponseWriter, r *http.Request) {
+	user, err := auth.FetchUserData(r)
+	if err != nil {
+		w.WriteHeader(403)
+		fmt.Println("Unauthorized")
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println(err)
@@ -137,6 +146,7 @@ func serveWs(pool *Pool, w http.ResponseWriter, r *http.Request) {
 		ID:   uuid.NewString(),
 		Conn: conn,
 		Pool: pool,
+		User: user,
 	}
 
 	pool.Register <- client

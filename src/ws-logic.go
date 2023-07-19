@@ -16,6 +16,7 @@ func HandleMessage(client *Client, event map[string]string) {
 	case SetPixel:
 		row, err := strconv.Atoi(event["row"])
 		column, err := strconv.Atoi(event["col"])
+		color := event["color"]
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -23,14 +24,17 @@ func HandleMessage(client *Client, event map[string]string) {
 		pixel := Pixel{
 			Row:      row,
 			Column:   column,
-			Color:    event["color"],
-			PlayerId: "",
+			Color:    color,
+			PlayerId: client.User.Id,
 		}
 		err = pixel.savePixel()
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
+
+		fmt.Println("Pixel " + strconv.Itoa(row) + ":" + strconv.Itoa(column) + " is set to color " + color + " by user " + client.User.Id)
+
 		msg := MessageWithClient{
 			Message: Message{
 				Type: SetPixel,
