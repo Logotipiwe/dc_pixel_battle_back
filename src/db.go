@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/uuid"
 	. "github.com/logotipiwe/dc_go_utils/src/config"
 )
 
@@ -69,10 +70,28 @@ func toModel(p PixelResult) Pixel {
 }
 
 func (p Pixel) savePixel() error {
-	_, err := db.Exec("insert into pixels (pixel_row, pixel_col, color, player_id) "+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec("insert into pixels (pixel_row, pixel_col, color, player_id) "+
 		"VALUES (?, ?, ?, ?) on duplicate key update color = ?, player_id = ?",
 		p.Row, p.Column, p.Color, p.PlayerId, p.Color, p.PlayerId)
 	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	historyId := uuid.NewString()
+	_, err = tx.Exec("insert into history (id, pixel_row, pixel_col, color, user_id) "+
+		"VALUES (?,?,?,?,?)",
+		historyId, p.Row, p.Column, p.Color, p.PlayerId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
 		return err
 	}
 	return nil
