@@ -131,6 +131,7 @@ func BroadcastAll(pool *Pool, m Message) error {
 func serveWs(pool *Pool, w http.ResponseWriter, r *http.Request) {
 	user, err := auth.FetchUserData(r)
 	if err != nil {
+		//TODO make field scalable
 		w.WriteHeader(403) //TODO change to event UNAUTHORIZED
 		fmt.Println("Unauthorized request to /listen-changes")
 		fmt.Println(err)
