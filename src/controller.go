@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Logotipiwe/dc_go_auth_lib/auth"
 	utils "github.com/logotipiwe/dc_go_utils/src"
 	"github.com/logotipiwe/dc_go_utils/src/config"
 	"log"
@@ -43,39 +44,29 @@ func main() {
 		}
 	})
 
-	//http.HandleFunc("/api/set-pixel", func(w http.ResponseWriter, r *http.Request) {
-	//	println("/set-pixel")
-	//	w.Header().Set("Content-Type", "application/json")
-	//	w.Header().Set("Access-Control-Allow-Origin", "*")
-	//	user, err := auth.FetchUserData(r)
-	//	if err != nil {
-	//		w.WriteHeader(403)
-	//		println(err.Error())
-	//		return
-	//	}
-	//	color := r.URL.Query().Get("color")
-	//	rowStr := r.URL.Query().Get("row")
-	//	colStr := r.URL.Query().Get("col")
-	//	if colStr == "" || rowStr == "" || !isColorExist(color) {
-	//		w.WriteHeader(400)
-	//		println("Wrong data sent")
-	//		return
-	//	}
-	//	row, err1 := strconv.Atoi(rowStr)
-	//	col, err2 := strconv.Atoi(colStr)
-	//	if err1 != nil || err2 != nil {
-	//		w.WriteHeader(500)
-	//		println(fmt.Sprintf("%s; %s", err1, err2))
-	//		return
-	//	}
-	//	pixel := Pixel{row, col, color, user.Id}
-	//	err = pixel.savePixel()
-	//	if err != nil {
-	//		println("Error updating pixel %s", err.Error())
-	//		w.WriteHeader(500)
-	//		return
-	//	}
-	//})
+	http.HandleFunc("/api/get-history", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		user, err := auth.FetchUserData(r)
+		if err != nil {
+			w.WriteHeader(403)
+			return
+		}
+		log.Println("User " + user.Id + " is playing history...")
+		history, err := getHistory()
+		if err != nil {
+			handleErrInController(w, err)
+			return
+		}
+		historyDtos := utils.Map(history, func(h History) HistoryDto {
+			return h.toDto()
+		})
+		err = json.NewEncoder(w).Encode(historyDtos)
+		if err != nil {
+			handleErrInController(w, err)
+			return
+		}
+	})
 
 	pool := NewPool()
 	go pool.Start()
@@ -91,4 +82,9 @@ func main() {
 	if err != nil {
 		log.Fatalln(err)
 	}
+}
+
+func handleErrInController(w http.ResponseWriter, err error) {
+	w.WriteHeader(500)
+	fmt.Fprintf(w, "{\"ok\": \"false\", \"err\":\"%s\"}", err.Error())
 }

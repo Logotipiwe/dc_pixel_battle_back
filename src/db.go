@@ -96,3 +96,20 @@ func (p Pixel) savePixel() error {
 	}
 	return nil
 }
+
+func getHistory() ([]History, error) {
+	var history []History
+	rows, err := db.Query("SELECT id, pixel_col, pixel_row, color, user_id FROM history")
+	if err != nil {
+		return nil, err
+	}
+	for rows.Next() {
+		res := History{}
+		err = rows.Scan(&res.Id, &res.Column, &res.Row, &res.Color, &res.PlayerId)
+		if err != nil {
+			return nil, err
+		}
+		history = append(history, res)
+	}
+	return history, nil
+}

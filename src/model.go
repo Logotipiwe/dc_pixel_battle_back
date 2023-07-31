@@ -1,5 +1,10 @@
 package main
 
+import (
+	"github.com/google/uuid"
+	"time"
+)
+
 type Pixel struct {
 	Row      int
 	Column   int
@@ -16,6 +21,35 @@ type PixelDto struct {
 
 type ColorDto struct {
 	Color string `json:"color"`
+}
+
+type History struct {
+	Id       uuid.UUID
+	Row      int
+	Column   int
+	Color    string
+	PlayerId string
+	Time     time.Time
+}
+
+type HistoryDto struct {
+	Id       uuid.UUID `json:"id"`
+	Row      int       `json:"row"`
+	Column   int       `json:"column"`
+	Color    string    `json:"color"`
+	PlayerId string    `json:"playerId"`
+	Time     time.Time `json:"time"`
+}
+
+func (h History) toDto() HistoryDto {
+	return HistoryDto{
+		Id:       h.Id,
+		Row:      h.Row,
+		Column:   h.Column,
+		Color:    h.Color,
+		PlayerId: h.PlayerId,
+		Time:     h.Time,
+	}
 }
 
 func (p Pixel) toDto() PixelDto {
