@@ -99,7 +99,7 @@ func (p Pixel) savePixel() error {
 
 func getHistory() ([]History, error) {
 	var history []History
-	rows, err := db.Query("SELECT id, pixel_col, pixel_row, color, user_id FROM history")
+	rows, err := db.Query("SELECT id, pixel_col, pixel_row, color, user_id FROM history ORDER BY time")
 	if err != nil {
 		return nil, err
 	}
