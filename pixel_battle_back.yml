@@ -9,7 +9,6 @@ services:
     environment:
       CONFIG_SERVER_URL: http://config_server
       SERVICE_NAME: pixel-battle-back
-      NAMESPACE: prod
       M_TOKEN: ${M_TOKEN}
 networks:
   dc-net:
